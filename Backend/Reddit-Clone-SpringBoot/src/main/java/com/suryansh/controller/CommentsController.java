@@ -27,7 +27,7 @@ public class CommentsController {
             return new ResponseEntity<>("Something Went Wrong",HttpStatus.CONFLICT);
         }
     }
-
+    
     @GetMapping("/by-post/{postId}")
     public ResponseEntity<List<CommentsDto>>getAllCommentsForPost(@PathVariable Long postId){
         try{

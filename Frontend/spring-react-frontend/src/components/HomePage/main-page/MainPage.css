@@ -1,0 +1,61 @@
+.MainPage{
+    padding: 180px 50px;
+
+}
+.slider{
+    margin-left: 150px;
+    margin-right: 150px;
+    margin-top: 70px;
+    padding-top: 20px;
+}
+.slide{
+    border: 3px solid black;
+    cursor: pointer;
+}
+.slide:hover{
+    opacity: 0.8;
+}
+.slideImage{
+    width: 100%;
+    max-height: 200px;
+    min-height: 200px;
+}
+.MainPageOptions{
+    margin-top: 80px;
+}
+.MainPageOptionsBtn{
+    display: block;
+    margin: auto;
+    width: 300px;
+    height: 70px;
+
+}
+.MainPage-Left{
+    background-color: #f9f5f5;
+}
+.MainPage-Mid{
+    background-color: white;
+    width: 10px;
+}
+.MainPageSubreddits-title{
+    text-align: center;
+}
+.MainPageSubreddits{
+    border: 3px solid black;
+    border-radius: 10px;
+    padding-left:10px;
+    margin: 50px;
+    width: 80%;
+    height: 13%;
+    overflow: scroll;
+}
+.MainPageSubreddits-options{
+    cursor: pointer;
+    border: 1px solid black;
+    border-radius: 5px;
+    margin: 10px;
+
+}
+.MainPageSubreddits-options:hover{
+    opacity: 0.7;
+}

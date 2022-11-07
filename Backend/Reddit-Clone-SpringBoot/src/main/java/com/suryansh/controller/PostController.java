@@ -43,4 +43,14 @@ public class PostController {
             return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("by-id/{id}")
+    public ResponseEntity<PostResponse> getPostById(@PathVariable Long id){
+        try{
+            return new ResponseEntity<>(postService.getPostById(id)
+                    ,HttpStatus.FOUND);
+        }catch (Exception e){
+            return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
+        }
+    }
 }

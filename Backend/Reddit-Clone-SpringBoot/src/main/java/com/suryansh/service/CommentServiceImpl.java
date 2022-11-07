@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class CommentServiceImpl implements CommentService{
+public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final AuthService authService;
     private final CommentRepository commentRepository;
@@ -42,8 +42,8 @@ public class CommentServiceImpl implements CommentService{
             commentRepository.save(comment);
             String message = mailContentBuilder.build(post.getUser().getUsername()
                     + "Posted a comment on your post");
-            sendCommentNotification(message,post.getUser());
-        }catch (Exception e){
+            sendCommentNotification(message, post.getUser());
+        } catch (Exception e) {
             throw new SpringRedditException("Unable to save Comment");
         }
     }
@@ -51,18 +51,17 @@ public class CommentServiceImpl implements CommentService{
     @Override
     public List<CommentsDto> getAllCommentsForPost(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(()-> new SpringRedditException("Post Not Found"));
+                .orElseThrow(() -> new SpringRedditException("Post Not Found"));
 
         return commentRepository.findByPost(post)
                 .stream()
                 .map(this::commentEntityToDto)
                 .collect(Collectors.toList());
     }
-
     @Override
     public List<CommentsDto> getCommentsByUser(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(()->new SpringRedditException("No user found of name : " + username));
+                .orElseThrow(() -> new SpringRedditException("No user found of name : " + username));
         return commentRepository.findAllByUser(user)
                 .stream()
                 .map(this::commentEntityToDto)
@@ -81,7 +80,7 @@ public class CommentServiceImpl implements CommentService{
     }
 
     private void sendCommentNotification(String message, User user) {
-        mailService.sendMail(new NotificationEmail(user.getUsername()+"Commented on your post",
+        mailService.sendMail(new NotificationEmail(user.getUsername() + "Commented on your post",
                 user.getEmail(), message));
     }
 }

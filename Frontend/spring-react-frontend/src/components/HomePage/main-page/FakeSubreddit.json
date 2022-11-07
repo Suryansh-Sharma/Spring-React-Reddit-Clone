@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "First Subreddit",
+    "description": null,
+    "numberOfPost": 0
+  },
+  {
+    "id": 2,
+    "name": "Java Developers",
+    "description": null,
+    "numberOfPost": 0
+  },
+  {
+    "id": 3,
+    "name": "Spring Developers",
+    "description": null,
+    "numberOfPost": 0
+  },
+  {
+    "id": 4,
+    "name": "React Community",
+    "description": null,
+    "numberOfPost": 0
+  },
+  {
+    "id": 5,
+    "name": "Full Stack Development",
+    "description": null,
+    "numberOfPost": 0
+  },
+  {
+    "id": 6,
+    "name": "Dsa Community ",
+    "description": null,
+    "numberOfPost": 0
+  }
+]

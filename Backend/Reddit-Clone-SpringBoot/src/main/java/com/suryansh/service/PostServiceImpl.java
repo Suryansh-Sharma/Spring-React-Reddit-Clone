@@ -73,6 +73,13 @@ public class PostServiceImpl implements PostService{
 
     }
 
+    @Override
+    public PostResponse getPostById(Long postId) {
+        Post res = postRepository.findByPostId(postId)
+                .orElseThrow(()->new SpringRedditException("Sorry no post found of Id " + postId));
+        return PostEntityToPostResponse(res);
+    }
+
     private PostResponse PostEntityToPostResponse(Post post) {
         int commentCount = commentRepository.findByPost(post).size();
         PrettyTime p = new PrettyTime();

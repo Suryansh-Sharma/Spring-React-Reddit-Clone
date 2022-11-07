@@ -1,0 +1,39 @@
+[
+  {
+    "createdDate": "2022-10-09T08:48:28Z",
+    "text": "First Comment",
+    "userName": "Suryansh1904",
+    "id": 1,
+    "postId": 0,
+    "noOfReplies":2,
+    "commentId": 1,
+    "replies": [
+      {
+        "id": 0,
+        "commentId": 1,
+        "userName": "Rishi",
+        "createdDate": "2022-10-09T08:48:28Z",
+        "repliedTo":"Suryansh1904",
+        "text": "yes you are right"
+      },
+      {
+        "id": 1,
+        "commentId": 1,
+        "userName": "Ajay",
+        "createdDate": "2022-10-12T17:32:09Z",
+        "repliedTo":"Rishi",
+        "text": "I am Satisfied with this verdict"
+      }
+    ]
+
+  },
+  {
+    "createdDate": "2022-10-12T17:32:09Z",
+    "text": "Hello this is Dummy Comment",
+    "userName": "Ajay Sharma",
+    "id": 2,
+    "postId": 0,
+    "noOfReplies":0,
+    "replies": null
+  }
+]

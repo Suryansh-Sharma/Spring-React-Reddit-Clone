@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "First Subreddit",
+    "description": null,
+    "numberOfPost": 0
+  },
+  {
+    "id": 2,
+    "name": "Java Developers",
+    "description": null,
+    "numberOfPost": 0
+  }
+]

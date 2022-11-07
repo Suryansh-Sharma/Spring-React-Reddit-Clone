@@ -1,16 +1,21 @@
 import React, {useContext} from 'react';
 import "./Navbar.css"
 import {Auth} from "../../context/AuthContext";
+import Toggle from "./Toggle/Toggle";
+import {Api} from "../../context/ApiContext";
 
 const MyComponent = () => {
-    const {username,
+    const {
+        username,
         isLogin,
-        setIsLogin} = useContext(Auth);
-    const handleLoginOrLogout =()=>{
-        if (isLogin===true){
+        setIsLogin
+    } = useContext(Auth);
+    const {darkTheme} = useContext(Api);
+    const handleLoginOrLogout = () => {
+        if (isLogin === true) {
             setIsLogin(false);
             alert("SignOut")
-        }else{
+        } else {
             setIsLogin(true);
             alert("Sign In");
         }
@@ -18,7 +23,9 @@ const MyComponent = () => {
     return (
         <>
             <header>
-                <nav className={"navbar fixed-top navbar-expand-lg navbar-light bg-light"}>
+                <nav className={darkTheme ? "navbar  fixed-top navbar-expand-lg navbar-light bg-dark navbarHome2" :
+                    "navbar  fixed-top navbar-expand-lg navbar-light bg-light navbarHome2"}
+                >
                     <div className="flex-grow-1">
                         <a aria-label="Home" className="logo" href={"/"}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" className="reddit-icon-svg">
@@ -34,23 +41,26 @@ const MyComponent = () => {
                             </span>
                         </a>
                     </div>
+                    <Toggle/>
                     <div className="float-right">
+
                         {
-                            (isLogin)?
+                            (isLogin) ?
                                 <div className="nav-dropdown">
                                     <button className="btn btn-primary " type="button"
                                             data-bs-toggle="dropdown" aria-expanded="false">
                                         {username}
                                     </button>
                                     <ul className="dropdown-menu">
-                                        <li><a className="dropdown-item " href="src/components/Navbar/Navbar#">Account Details</a></li>
+                                        <li><a className="dropdown-item " href="src/components/Navbar/Navbar#">Account
+                                            Details</a></li>
                                         <li className={"nav-drop-logout"} onClick={handleLoginOrLogout}>
                                             <a className="dropdown-item">Logout</a></li>
                                     </ul>
                                 </div>
                                 :
                                 <>
-                                    <button className={"Login-btn"} onClick={handleLoginOrLogout} >Login</button>
+                                    <button className={"Login-btn"} onClick={handleLoginOrLogout}>Login</button>
                                     <button className={"SignUp-btn"}>Sign Up</button>
                                 </>
                         }

@@ -1,0 +1,19 @@
+.create-post{
+    border: 3px solid blueviolet;
+    border-radius: 10px;
+    padding: 200px;
+}
+.postDesc{
+    margin-top: 10px;
+}
+.postUrl{
+    padding: 20px;
+}
+.subredditOptions{
+    position: relative;
+    left: -100px;
+}
+.submitBtn{
+    margin: auto;
+    display: block;
+}
