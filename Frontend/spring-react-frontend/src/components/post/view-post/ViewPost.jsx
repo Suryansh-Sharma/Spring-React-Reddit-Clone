@@ -1,8 +1,6 @@
 import React, { useContext } from "react";
 import "./ViewPost.css";
 import Comment from "../comment/Comment";
-import data from "./ViewPostFakeApi.json";
-import subreddit from "./SubredditFakeApi.json";
 import upArrow from "../../../images/thumbUp.png";
 import downArrow from "../../../images/thumbDown.png";
 import javaIcon from "../../../images/javaIcon.jpg";
@@ -10,12 +8,64 @@ import springAndKafka from "../../../images/Spring&Kafka.png";
 import parse from "html-react-parser";
 import { Api } from "../../../context/ApiContext";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+import { useState } from "react";
+import Axios from "axios";
+import AuthContext from "../../../context/AuthContext";
 function ViewPost() {
   const { darkTheme } = useContext(Api);
+  const Auth= useContext(AuthContext);
+  const {id} = useParams();
+  const[data,setData]=useState({
+    "id": 1,
+    "postName": "",
+    "url": "",
+    "description": "",
+    "userName": "",
+    "subredditName": "",
+    "voteCount": 0,
+    "commentCount": 0,
+    "duration": "0",
+    "upVote": false,
+    "downVote": false
+  });
+  const[subreddit,setSubreddit]=useState({
+    "id": 2,
+    "name": "",
+    "description": "",
+    "numberOfPost": 0
+  });
   useEffect(() => {
     document.title = "View Post";
+    fetchDataFromApi();
   }, []);
+
+  const fetchDataFromApi=()=>{
+    fetch(`http://localhost:8080/api/posts/by-id/${id}`,{headers: {'Authorization': `Bearer ${Auth.jwtToken}`}})
+    .then(function(response) { return response.json(); })
+    .then(function(json) {
+      setData(json);
+      const name = json.subredditName;
+      fetchSubreddit(name);
+    });
+
+
+  }
+  const fetchSubreddit=(name)=>{
+    fetch(`http://localhost:8080/api/subreddit/by-name/${name}`,{headers: {'Authorization': `Bearer ${Auth.jwtToken}`}})
+    .then(function(response) { return response.json(); })
+    .then(function(json) {
+      setSubreddit(json);
+      // fetchComments(json.id)
+    });
+  }
+  const fetchComments=(commentId)=>{
+    fetch(`http://localhost:8080/api/comments/by-post/${commentId}`,{headers: {'Authorization': `Bearer ${Auth.jwtToken}`}})
+    .then(function(response) { return response.json(); })
+    .then(function(json) {
+      console.log(json);
+    });
+  }
 
   return (
     <div
@@ -102,9 +152,9 @@ function ViewPost() {
             {/* Post Description*/}
             <div className="description-post">{parse(data.description)}</div>
             {/* Post Image. */}
-            {data.postImage !== null ? (
+            {/* {data.postImage !== null ? (
               <img className="image-post2" src={`data.postImage`} alt="" />
-            ) : null}
+            ) : null} */}
           </div>
         </div>
       </div>
@@ -131,7 +181,7 @@ function ViewPost() {
         </span>
         <button className={"subreddit-join-btn"}>Join Community</button>
       </div>
-      <Comment />
+      <Comment postId={id} />
     </div>
   );
 }

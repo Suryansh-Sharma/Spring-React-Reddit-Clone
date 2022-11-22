@@ -1,3 +1,4 @@
+
 .view-post-left{
     /* width: 70%; */
     margin-top: 12px;
@@ -8,13 +9,13 @@
 .post-content2{
     background-color: white;
 }
-.image-post{
+/* .image-post{
     padding: 20px 20px 50px;
     max-height: 250px;
     max-width: 800px;
     min-height: 250px;
     min-width: 800px;
-}
+} */
 .view-post-divisor{
     width: 10px;
 }
@@ -45,7 +46,7 @@
 }
 .comment-section-title{
     margin-top: 30px;
-    margin-bottom: 30px;
+    /* margin-bottom: 0; */
     color: purple;
     text-align: center;
 }

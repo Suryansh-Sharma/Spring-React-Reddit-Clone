@@ -1,19 +1,19 @@
 package com.suryansh.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Getter
+@Setter
+@Builder
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,10 +21,16 @@ public class Comment {
     @NotEmpty
     private String text;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "postId",referencedColumnName = "postId")
+    @JoinColumn(name = "postId", referencedColumnName = "postId")
     private Post post;
     private Instant createdDate;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId",referencedColumnName = "userId")
+    @JoinColumn(name = "userId", referencedColumnName = "userId")
     private User user;
+    @OneToMany(cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY)
+    @JoinColumn(name = "commentId")
+    private List<RepliedComments> repliedComments = new ArrayList<>();
+    private int noOfReplies;
+
 }

@@ -5,8 +5,15 @@ import JoditEditor from "jodit-react";
 import subreddit from "./SubredditsFakeApi.json";
 import { Api } from "../../../context/ApiContext";
 import { useEffect } from "react";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import AuthContext from "../../../context/AuthContext";
+import Axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function CreatePost(props) {
+  const Auth= useContext(AuthContext);
+  let route = useNavigate();
   useEffect(() => {
     window.scroll(0, 0);
     document.title = "View Post";
@@ -20,6 +27,7 @@ function CreatePost(props) {
     postName: "",
     url: "",
     description: "",
+    username:Auth.username
   });
 
   const handleSubmitPost = () => {
@@ -27,11 +35,32 @@ function CreatePost(props) {
       alert("Post Name cannot be empty!!");
     }else if(postData.subredditName<=0){
       alert("Select Subreddit!!");
+    }
+    else if(!Auth.isVerified){
+      alert("Please verify your Account ");
+      route("/")
     }else{
-      console.log(postData);
+        Axios.post(`http://localhost:8080/api/posts`,postData,{
+          headers:Auth.jwtToken
+        }).then((response)=>{
+          toast.success('Post Added Successfully !!',{
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            });
+          setTimeout(RefreshPage,5000);
+        }).catch((error)=>{
+          console.log("Something went wrong!!")
+        })
     }
   };
-
+  const RefreshPage=()=>{
+    window.location.reload();
+  }
   return (
     <form
       className={"create-post"}

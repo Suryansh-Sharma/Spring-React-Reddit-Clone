@@ -37,14 +37,25 @@ public class SubredditImpl implements SubredditService{
 
     @Override
     public SubredditModel getById(Long id) {
-        Subreddit subreddit=subredditRepository.findById(id)
-                .orElseThrow(()->new SpringRedditException("No Subreddit found of Id : " + id));
+        Subreddit subreddit = subredditRepository.findById(id)
+                .orElseThrow(() -> new SpringRedditException("No Subreddit found of Id : " + id));
         return SubredditModel.builder()
                 .id(subreddit.getId())
                 .name(subreddit.getName())
                 .description(subreddit.getDescription())
-                .numberOfPost(0) .build();
+                .numberOfPost(0).build();
 
+    }
+
+    @Override
+    public SubredditModel getByName(String name) {
+        Subreddit subreddit = subredditRepository.findByName(name)
+                .orElseThrow(() -> new SpringRedditException("No subreddit found"));
+        return SubredditModel.builder()
+                .id(subreddit.getId())
+                .name(subreddit.getName())
+                .description(subreddit.getDescription())
+                .build();
     }
 
     private SubredditModel mapToModel(Subreddit subreddit) {

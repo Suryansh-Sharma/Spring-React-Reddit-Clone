@@ -10,7 +10,9 @@ public interface PostService {
 
     List<PostResponse> getAllPost();
 
-    List <PostResponse>getPostByUsername(String username);
+    List<PostResponse> getPostByUsername(String username);
 
     PostResponse getPostById(Long postId);
+
+    List<PostResponse> getRandomPost();
 }

@@ -3,7 +3,6 @@ import "./MainPage.css"
 import Post from "../all-post/Post";
 import javaOneIcon from "../../../images/JavaOneIcon.jpeg";
 
-import data from "./FakeSubreddit.json"
 import {Swiper, SwiperSlide} from 'swiper/react';
 import 'swiper/css/autoplay';
 // Import Swiper styles
@@ -15,14 +14,19 @@ import investigation from "../../../images/investigation.webp"
 import MovieTime from "../../../images/MovieTime.jpg"
 import {useNavigate} from "react-router-dom";
 import {Api} from "../../../context/ApiContext";
-
+import AuthContext from '../../../context/AuthContext';
+import Axios from "axios";
+import { useState } from 'react';
 const MainPage = () => {
     let navigate = useNavigate();
     const {api, random, darkTheme} = useContext(Api);
+    const Auth = useContext(AuthContext);
+    const [data,setData] = useState([]);
 
     useEffect(() => {
         window.scroll(0,0);
         document.title="Home Page";
+        if(!Auth.isLogin)navigate("/")
         fetch()
     }, [])
 
@@ -32,7 +36,14 @@ const MainPage = () => {
         fetch()
     }
     const fetch = () => {
-        console.log(api.name)
+        Axios.get(`http://localhost:8080/api/posts/random`)
+        .then((response)=>{
+            setData(response.data)
+        })
+        .catch((error)=>{
+            
+        })
+
     }
 
 
@@ -90,10 +101,11 @@ const MainPage = () => {
         <div className={"MainPage row"}>
             {/*Left Section*/}
             <div className="MainPage-Left col-md-7" style={darkTheme ? {background: "black"} : null}>
-                <Post/>
-                <Post/>
-                <Post/>
-                <Post/>
+                {
+                    data.map((val)=>(
+                        <Post data={val}/>
+                    ))
+                }
             </div>
 
             {/*Page Divisor*/}

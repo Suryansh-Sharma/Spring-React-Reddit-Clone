@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -14,7 +14,9 @@ import java.time.Instant;
 public class CommentsDto {
     private Long Id;
     private Long postId;
-    private Instant createdDate;
+    private String createdDate;
     private String text;
     private String userName;
+    private int noOfReplies;
+    private List<RepliedCommentsDto> repliedComments;
 }

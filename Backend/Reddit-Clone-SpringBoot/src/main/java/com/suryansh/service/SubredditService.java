@@ -10,4 +10,6 @@ public interface SubredditService {
     List<SubredditModel> getAll();
 
     SubredditModel getById(Long id);
+
+    SubredditModel getByName(String name);
 }

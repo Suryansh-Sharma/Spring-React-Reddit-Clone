@@ -1,25 +1,42 @@
-import React, {useContext} from 'react';
+import React, {useContext,useState} from 'react';
 import "./Navbar.css"
-import {Auth} from "../../context/AuthContext";
+import AuthContext, {Auth} from "../../context/AuthContext";
 import Toggle from "./Toggle/Toggle";
 import {Api} from "../../context/ApiContext";
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 const MyComponent = () => {
-    const {
-        username,
-        isLogin,
-        setIsLogin
-    } = useContext(Auth);
+    const authResponse = useContext(AuthContext);
     const {darkTheme} = useContext(Api);
+    const [log, setlog] = useState(false)
+    useEffect(()=>{
+    },[])
+    let navigate = useNavigate();
     const handleLoginOrLogout = () => {
-        if (isLogin === true) {
-            setIsLogin(false);
-            alert("SignOut")
+        if (authResponse.isLogin === true) {
+            localStorage.setItem('username',"Login/SignUp");
+            localStorage.setItem('isLogin',false);
+            localStorage.removeItem('jwtToken');
+            toast.success('Bye Bye , See you soon !!',{
+                position: "top-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                });
+            console.log("Bye-Bye!!")
+            setTimeout(RefreshPage,5000);
         } else {
-            setIsLogin(true);
-            alert("Sign In");
+            navigate("/login")
         }
     }
+    const RefreshPage=()=>{
+        window.location.reload();
+      }
     return (
         <>
             <header>
@@ -45,11 +62,11 @@ const MyComponent = () => {
                     <div className="float-right">
 
                         {
-                            (isLogin) ?
+                            (authResponse.isLogin) ?
                                 <div className="nav-dropdown">
                                     <button className="btn btn-primary " type="button"
                                             data-bs-toggle="dropdown" aria-expanded="false">
-                                        {username}
+                                        {authResponse.username}
                                     </button>
                                     <ul className="dropdown-menu">
                                         <li><a className="dropdown-item " href="src/components/Navbar/Navbar#">Account
@@ -61,7 +78,7 @@ const MyComponent = () => {
                                 :
                                 <>
                                     <button className={"Login-btn"} onClick={handleLoginOrLogout}>Login</button>
-                                    <button className={"SignUp-btn"}>Sign Up</button>
+                                    <button className={"SignUp-btn"} onClick={()=>navigate("/signUp")}>Sign Up</button>
                                 </>
                         }
 

@@ -13,4 +13,5 @@ public class PostRequest {
     private String postName;
     private String url;
     private String description;
+    private String username;
 }

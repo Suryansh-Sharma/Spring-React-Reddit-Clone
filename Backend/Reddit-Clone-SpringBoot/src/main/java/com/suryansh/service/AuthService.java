@@ -13,4 +13,10 @@ public interface AuthService {
     AuthenticationResponse login(LoginRequest loginRequest);
 
     User getCurrentUser();
+
+    void checkUserIsPresent(RegisterRequest registerRequest);
+
+    void resendVerificationToken(String username);
+
+    void isUserEnabled(String username);
 }

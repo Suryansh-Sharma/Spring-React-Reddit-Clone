@@ -1,13 +1,14 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import "./Comment.css"
-import {Auth} from "../../../context/AuthContext";
-import commentsData from "./CommentsFakeApi.json";
-
 import profilePic from "../../../images/IMG_20220621_121054-modified.png";
 import defaultPic from "../../../images/defaultPic.png"
 import {Api} from "../../../context/ApiContext";
+import AuthContext from '../../../context/AuthContext';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Axios from "axios";
 const MyComponent = ({postId}) => {
-    const {isLogin,username} = useContext(Auth);
+    const Auth= useContext(AuthContext);
     const {darkTheme} = useContext(Api);
     const [showRepliedComment,setShowRepliedComment] = useState(false);
     const[commentId,setCommentId] = useState(0);
@@ -19,19 +20,50 @@ const MyComponent = ({postId}) => {
         "noOfReplies":0
     }
     const [postCommentValues,setPostCommentValues]=useState({
-        "postId":0,
-        "text":""
+        postId:0,
+        text:"",
+        userName:""
     });
+    const[commentsData,setCommentsData]=useState([]);
+    useEffect(()=>{
+        fetch(`http://localhost:8080/api/comments/by-post/${postId}`,{headers: {'Authorization': `Bearer ${Auth.jwtToken}`}})
+        .then(function(response) { return response.json(); })
+        .then(function(json) {
+            setCommentsData(json);
+        });
+    },[]);
     // To check if user is login then add comment only.
     const handleReplyButtonClick=()=>{
-        if (isLogin){
+        if (Auth.isLogin && postCommentValues.text.length>0){
             handleAddCommentToPost();
         }
     }
 
     const handleAddCommentToPost=()=>{
-        console.log(postCommentValues);
+        Axios.post(`http://localhost:8080/api/comments/save`,postCommentValues,{
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer '+Auth.jwtToken
+            }
+          }).then((response)=>{
+            toast.success('🦄 Comment Added Successfully !!',{
+              position: "top-center",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              });
+            setTimeout(RefreshPage,5000);
+          }).catch((error)=>{
+            console.log("Something went wrong!!")
+            console.log(error)
+          })
     }
+    const RefreshPage=()=>{
+        window.location.reload();
+      }
     // To handle comment reply.
     const handleCommentReply=()=>{
         console.log(postCommentReplyValues);
@@ -46,22 +78,23 @@ const MyComponent = ({postId}) => {
              style={darkTheme?{borderColor:"white"}:null}
         >
             <div className="comments-top row">
-                <img src={isLogin?profilePic:defaultPic } alt="" className={"col-md-1"}/>
+                <img src={Auth.isLogin?profilePic:defaultPic } alt="" className={"col-md-1"}/>
                 <input type="text" placeholder={"Add Comment Here"} className={"AddComment col-md-3"}
                     onChange={(event)=>{
                         setPostCommentValues({...postCommentValues,
-                        postId: postId,text: event.target.value});
+                        postId: postId,text: event.target.value,userName:Auth.username});
                     }}
                 />
                 <button className={"AddCommentButton col-md-2"} onClick={handleReplyButtonClick}>
                     {
-                        isLogin?"Add Comment"
+                        Auth.isLogin?"Add Comment"
                             : "Login/NewUser"
                     }
                 </button>
             </div>
             {
                 commentsData.map((data)=>
+    
                     <div className={"singleComment"}  key={data.id}
                          style={darkTheme?{color:"white"}:null}
                     >
@@ -75,7 +108,7 @@ const MyComponent = ({postId}) => {
                             <span onClick={()=>{
                                 if (!showRepliedComment){
                                     setShowRepliedComment(true);
-                                    setCommentId(data.commentId);
+                                    setCommentId(data.postId);
                                 }
                                 else if(showRepliedComment){
                                     setShowRepliedComment(false);
@@ -87,10 +120,10 @@ const MyComponent = ({postId}) => {
                         </div>
                         {
                             showRepliedComment?
-                                commentId>0?
-                                    data.commentId===commentId?
-                                data.replies.map((replyData)=>
-                                    <div className={"repliedCommentSection"} key={replyData.userName}>
+                                data.repliedComments!=null?
+                                    data.postId===commentId?
+                                data.repliedComments.map((replyData)=>
+                                    <div className={"repliedCommentSection"} key={replyData.id}>
                                         <div className="comment row" key={replyData.id}>
                                             <h6 className={"commentUsername col-4"}>@{replyData.userName}</h6>
                                             <span className={"commentDate col-"}>Created on {"->   "}
@@ -101,7 +134,7 @@ const MyComponent = ({postId}) => {
                                         </div>
                                         <span className={"commentOptionsBtn"}
                                               onClick={()=> {
-                                                  postCommentReplyValues.userName = username;
+                                                  postCommentReplyValues.userName = Auth.username;
                                                   postCommentReplyValues.commentId = replyData.commentId;
                                                   postCommentReplyValues.text = "Check";
                                                   postCommentReplyValues.repliedTo = replyData.userName;

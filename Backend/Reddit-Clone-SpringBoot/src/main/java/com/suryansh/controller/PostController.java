@@ -13,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/posts")
+@CrossOrigin
 @AllArgsConstructor
 public class PostController {
 
@@ -45,12 +46,18 @@ public class PostController {
     }
 
     @GetMapping("by-id/{id}")
-    public ResponseEntity<PostResponse> getPostById(@PathVariable Long id){
-        try{
+    public ResponseEntity<PostResponse> getPostById(@PathVariable Long id) {
+        try {
             return new ResponseEntity<>(postService.getPostById(id)
-                    ,HttpStatus.FOUND);
-        }catch (Exception e){
-            return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
+                    , HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("random")
+    public ResponseEntity<List<PostResponse>> getRandomPost() {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(postService.getRandomPost());
     }
 }

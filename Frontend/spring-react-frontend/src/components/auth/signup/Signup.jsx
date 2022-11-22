@@ -1,7 +1,9 @@
 import "./Signup.css"
 import React, {useState} from 'react';
 import {useNavigate} from "react-router-dom";
-
+import Axios from "axios";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 function Signup() {
     let navigate = useNavigate();
     const[signUpData,setSignUpData] = useState({
@@ -27,8 +29,40 @@ function Signup() {
             alert("Invalid password.");
             setError({...error,password: "Please enter valid Password."});
         }else{
-            alert("Congratulations.");
-            console.log(signUpData);
+            Axios.post(`http://localhost:8080/api/auth/signup`,signUpData)
+            .then((response)=>{
+                if(response.status!==409){
+                    toast.success("Congratulation your account is created.",{
+                        position: "top-center",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        });  
+                    toast.success("Verify your account through E-Mail",{
+                        position: "top-center",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        }); 
+                }
+            })
+            .catch((error)=>{
+                toast.error("Username is already used , please select another one !!",{
+                    position: "top-center",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    }); 
+            })
         }
     }
     return (

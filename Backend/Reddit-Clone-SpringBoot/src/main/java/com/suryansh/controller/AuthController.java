@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin
 public class AuthController {
 
     private final AuthService authService;
@@ -22,10 +23,26 @@ public class AuthController {
 
     @Async
     @PostMapping("/signup")
-    public CompletableFuture<ResponseEntity<String>> signUp(@RequestBody RegisterRequest registerRequest){
-        authService.signUp(registerRequest);
-        return CompletableFuture.completedFuture(new ResponseEntity<>("User Registration Successfully"
-                , HttpStatus.OK));
+    public CompletableFuture<ResponseEntity<String>> signUp(@RequestBody RegisterRequest registerRequest) {
+        try {
+            authService.checkUserIsPresent(registerRequest);
+            authService.signUp(registerRequest);
+            return CompletableFuture.completedFuture(new ResponseEntity<>("User Registration Successfully"
+                    , HttpStatus.CREATED));
+        } catch (Exception e) {
+            return CompletableFuture.completedFuture(new ResponseEntity<>("UserName is Already Present !!"
+                    , HttpStatus.CONFLICT));
+        }
+    }
+
+    @GetMapping("isUserEnabled/{username}")
+    public ResponseEntity<Boolean> isUserActive(@PathVariable String username){
+        try {
+            authService.isUserEnabled(username);
+            return new ResponseEntity<>(true,HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(false,HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("accountVerification/{token}")
@@ -34,6 +51,12 @@ public class AuthController {
         return new ResponseEntity<>("Account Activated Successfully",HttpStatus.OK);
     }
 
+    @Async
+    @GetMapping("/resendToken/{username}")
+    public CompletableFuture<ResponseEntity<Void>> resendToken(@PathVariable String username){
+        authService.resendVerificationToken(username);
+        return CompletableFuture.completedFuture(new ResponseEntity<>(HttpStatus.OK));
+    }
     @PostMapping("/login")
     public AuthenticationResponse login(@RequestBody LoginRequest loginRequest){
         return authService.login(loginRequest);

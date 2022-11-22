@@ -35,9 +35,10 @@ public class PostServiceImpl implements PostService{
     @Override
     public void save(PostRequest postRequest) {
 
-        User currentUser = authService.getCurrentUser();
+        User currentUser = userRepository.findByUsername(postRequest.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("No user found of name : " + postRequest.getUsername()));
         Subreddit subreddit = subredditRepository.findByName(postRequest.getSubredditName())
-                .orElseThrow(()-> new SubredditNotFoundException(postRequest.getSubredditName()));
+                .orElseThrow(() -> new SubredditNotFoundException(postRequest.getSubredditName()));
         Post post = Post.builder()
                 .postId(postRequest.getPostId())
                 .postName(postRequest.getPostName())
@@ -76,16 +77,37 @@ public class PostServiceImpl implements PostService{
     @Override
     public PostResponse getPostById(Long postId) {
         Post res = postRepository.findByPostId(postId)
-                .orElseThrow(()->new SpringRedditException("Sorry no post found of Id " + postId));
+                .orElseThrow(() -> new SpringRedditException("Sorry no post found of Id " + postId));
         return PostEntityToPostResponse(res);
+    }
+
+    @Override
+    public List<PostResponse> getRandomPost() {
+        return postRepository.getRandomPost()
+                .stream()
+                .map((post) -> {
+                    PrettyTime p = new PrettyTime();
+                    String getDuration = p.format(post.getCreatedDate());
+                    return PostResponse.builder()
+                            .id(post.getPostId())
+                            .postName(post.getPostName())
+                            .url(post.getUrl())
+                            .description(post.getDescription())
+                            .voteCount(post.getVoteCount())
+                            .duration(getDuration)
+                            .userName(post.getUser().getUsername())
+                            .subredditName(post.getSubreddit().getName())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     private PostResponse PostEntityToPostResponse(Post post) {
         int commentCount = commentRepository.findByPost(post).size();
         PrettyTime p = new PrettyTime();
         String getDuration = p.format(post.getCreatedDate());
-        boolean isPostUpVoted =  checkVoteType(post, UPVOTE);
-        boolean isPostDownVoted =  checkVoteType(post, DOWNVOTE);
+        boolean isPostUpVoted = checkVoteType(post, UPVOTE);
+        boolean isPostDownVoted = checkVoteType(post, DOWNVOTE);
         return PostResponse.builder()
                 .id(post.getPostId())
                 .postName(post.getPostName())

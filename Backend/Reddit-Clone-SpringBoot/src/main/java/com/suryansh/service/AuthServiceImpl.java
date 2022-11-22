@@ -1,16 +1,18 @@
 package com.suryansh.service;
 
 import com.suryansh.dto.AuthenticationResponse;
-import com.suryansh.dto.NotificationEmail;
 import com.suryansh.dto.RegisterRequest;
 import com.suryansh.entity.User;
 import com.suryansh.entity.VerificationToken;
 import com.suryansh.exception.SpringRedditException;
+import com.suryansh.mail.MailService;
 import com.suryansh.model.LoginRequest;
+import com.suryansh.model.NotificationEmail;
 import com.suryansh.repository.UserRepository;
 import com.suryansh.repository.VerificationTokenRepository;
 import com.suryansh.security.JwtProvider;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.mail.MailException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,46 +30,53 @@ import java.util.UUID;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    // Field Injection for User Repository
-    // Field Injection for Password Encoder
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository verificationTokenRepository;
-    private final MailService mailService;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
+    private final MailService mailService;
 
     public AuthServiceImpl(PasswordEncoder passwordEncoder, UserRepository userRepository
-            , VerificationTokenRepository verificationTokenRepository
-            , MailService mailService, AuthenticationManager authenticationManager,
-                           JwtProvider jwtProvider) {
+            , VerificationTokenRepository verificationTokenRepository,
+                           AuthenticationManager authenticationManager,
+                           JwtProvider jwtProvider, MailService mailService) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.verificationTokenRepository = verificationTokenRepository;
-        this.mailService = mailService;
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
+        this.mailService = mailService;
     }
 
     @Transactional
+    @Async
     public void signUp(RegisterRequest registerRequest) {
-        User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setEmail(registerRequest.getEmail());
-        user.setPassword(
-                passwordEncoder.encode(
-                        registerRequest.getPassword()));
-        user.setCreated(Instant.now());
-        user.setEnabled(false);
-        // Save User to Repository.
-        userRepository.save(user);
-        // Send Verification Token to User Email.
-        String token = generateVerificationToken(user);
-        mailService.sendMail(new NotificationEmail("Please Activate your Account.",
-                user.getEmail(), "Thank you for Sign Up  to Spring Reddit Clone" +
-                "please click on the blow link to activate your Account : " +
-                "http://localhost:8080/api/auth/accountVerification/" + token));
+        try {
+            // Save User .
+            User user = new User();
+            user.setUsername(registerRequest.getUsername());
+            user.setEmail(registerRequest.getEmail());
+            user.setPassword(
+                    passwordEncoder.encode(
+                            registerRequest.getPassword()));
+            user.setCreated(Instant.now());
+            user.setEnabled(false);
+            // Save User to Repository.
+            userRepository.save(user);
+            // Send Verification Token to User Email.
+            String token = generateVerificationToken(user);
 
+            NotificationEmail email = new NotificationEmail();
+            email.setUserName(user.getUsername());
+            email.setSender("Spring-Reddit-Team");
+            email.setSubject("Please Verify your Account");
+            email.setRecipient(user.getEmail());
+            email.setBody("http://localhost:8080/api/auth/accountVerification/"+token);
+            mailService.sendAuthTokenMail(email);
+        } catch (Exception e) {
+            throw new SpringRedditException("Unable to Register User.");
+        }
     }
 
     private String generateVerificationToken(User user) {
@@ -83,10 +92,10 @@ public class AuthServiceImpl implements AuthService {
     //     Account Verification Method.
     @Override
     public void verifyAccount(String token) {
-        Optional<VerificationToken> verificationToken =
-        verificationTokenRepository.findByToken(token);
-        verificationToken.orElseThrow(()->new SpringRedditException("Invalid Token"));
-        fetchUserAndEnable(verificationToken.get());
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
+                        .orElseThrow(()->new SpringRedditException("Unable to find Token"));
+        fetchUserAndEnable(verificationToken);
+        verificationTokenRepository.deleteById(verificationToken.getId());
     }
 
     @Transactional
@@ -102,22 +111,53 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthenticationResponse login(LoginRequest loginRequest) {
         Authentication authentication =
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
-                loginRequest.getPassword()));
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                        loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(()->new SpringRedditException("Sorry no user found"));
         String token = jwtProvider.generateToken(authentication);
-        return new AuthenticationResponse(token,loginRequest.getUsername());
+        return new AuthenticationResponse(token, user.getUsername(),user.isEnabled());
     }
 
     @Override
     public User getCurrentUser() {
-        Jwt principal =(Jwt)SecurityContextHolder
+        Jwt principal = (Jwt) SecurityContextHolder
                 .getContext().getAuthentication().getPrincipal();
         return userRepository.findByUsername(principal.getSubject())
-                .orElseThrow(()->new UsernameNotFoundException("User not found of name" + principal.getSubject()));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found of name" + principal.getSubject()));
     }
-    public boolean isLoggedIn() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return !(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated();
+
+    @Override
+    public void checkUserIsPresent(RegisterRequest registerRequest) {
+        Optional<User> checkUser = userRepository.findByUsername(registerRequest.getUsername());
+        if (checkUser.isPresent()) throw new RuntimeException("User already Present");
+    }
+
+    @Override
+    @Async
+    public void resendVerificationToken(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(()->new UsernameNotFoundException("User not found for token"));
+        VerificationToken verificationToken = verificationTokenRepository.findById(user.getUserId())
+                .orElseThrow(()->new SpringRedditException("No token found !!"));
+        try {
+            NotificationEmail email = new NotificationEmail();
+            email.setUserName(user.getUsername());
+            email.setSender("Spring-Reddit-Team");
+            email.setSubject("Please Verify your Account");
+            email.setRecipient(user.getEmail());
+            email.setBody("http://localhost:8080/api/auth/accountVerification/"+verificationToken.getToken());
+            mailService.sendAuthTokenMail(email);
+        }catch (MailException m){
+            System.out.println("Sorry unable to send Re verification token");
+        }
+    }
+
+    @Override
+    public void isUserEnabled(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(()->new SpringRedditException("No user found"));
+        if (!user.isEnabled())throw new SpringRedditException("User is Not Active");
     }
 }
